@@ -1,0 +1,14 @@
+{
+  "development": {
+    "storage": "db/cashier.sqlite3",
+    "dialect": "sqlite"
+  },
+  "test": {
+    "storage": "db/cashier.sqlite3",
+    "dialect": "sqlite"
+  },
+  "production": {
+    "storage": "db/cashier_pro.sqlite3",
+    "dialect": "sqlite"
+  }
+}
