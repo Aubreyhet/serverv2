@@ -13,12 +13,14 @@ const router = express.Router();
 
 
 // 创建用户
-router.post('/', expressJoi({
-  body: {
-    username: joi.string().alphanum().min(4).max(10).required(),
-    password: joi.string().min(6)
-  }
-}), userController.userCreate)
+// router.post('/', expressJoi({
+//   body: {
+//     username: joi.string().alphanum().min(4).max(10).required(),
+//     password: joi.string().min(6)
+//   }
+// }), userController.userCreate)
+
+router.post('/', userController.userCreate)
 
 
 // 获取所有用户数据
@@ -26,6 +28,11 @@ router.get('/', userController.userFindAll);
 
 
 router.delete('/del', userController.userDel)
+
+
+
+router.get('/byname', userController.userFindOne)
+
 
 
 

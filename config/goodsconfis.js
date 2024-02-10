@@ -12,5 +12,17 @@ const goodsConfig = {
   good_sell: '基本售价'
 }
 
+const orderConfig = {
+  order_no: '订单号',
+  order_status: '订单状态',
+  product_count: '商品数量',
+  product_amount_total: '实付金额',
+  order_amount_total: '订单金额',
+  pay_channel: '支付方式',
+  order_settle_time: '结算时间',
+  order_settle_user: '操作人员'
+}
 
-module.exports = { goodsConfig }
+
+
+module.exports = { goodsConfig, orderConfig }

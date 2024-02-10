@@ -2,14 +2,13 @@
 const fs = require('fs')
 const iconv = require('iconv-lite')
 const xlsx = require('xlsx');
-
+// const path = require('path')
 const { goodsConfig } = require('../config/goodsconfis')
 
-const { sequelize } = require('../config/dbconfig');
-const { Goods } = require('../models/goods')
+const { writeDataToFile } = require('../utils/index')
 
-
-
+const { Goods, Sequelize } = require('../models')
+const { Op } = Sequelize
 
 
 const parserFile = (fileObj) => {
@@ -23,13 +22,13 @@ const parserFile = (fileObj) => {
 }
 
 
+
 exports.saveDataToSql = async (req, res) => {
 
   if (req.file) {
     const sheetData = parserFile(req.file)
 
     try {
-      // await sequelize.sync()
 
       if (sheetData && sheetData.length > 0) {
         const countObj = {
@@ -105,16 +104,14 @@ exports.saveDataToSql = async (req, res) => {
 }
 
 
-
 exports.findAllGoodsList = async (req, res) => {
   try {
-
-
     const whereObj = {}
-
     for (let key in goodsConfig) {
       if (req.query[key]) {
-        whereObj[key] = req.query[key]
+        whereObj[key] = {
+          [Op.like]: `%${req.query[key]}%`,
+        }
       }
     }
 
@@ -126,7 +123,11 @@ exports.findAllGoodsList = async (req, res) => {
       }
     })
 
-    const goodsCount = await Goods.count()
+    const goodsCount = await Goods.count({
+      where: {
+        ...whereObj
+      }
+    })
 
 
     res.send({
@@ -148,8 +149,6 @@ exports.findAllGoodsList = async (req, res) => {
 }
 
 
-
-
 exports.updateGoodById = async (req, res) => {
 
   const goodId = req.body.id
@@ -165,7 +164,6 @@ exports.updateGoodById = async (req, res) => {
 
 
   try {
-    // await sequelize.sync()
 
     const goodInfo = await Goods.findAll({
       where: {
@@ -182,13 +180,13 @@ exports.updateGoodById = async (req, res) => {
 
       res.send({
         data: savedData,
-        message: '查询成功',
+        message: '更新成功',
         satus: 0
       })
 
 
     } else {
-      res.cc('查询数据不存在')
+      res.cc('数据更新失败')
     }
 
 
@@ -198,36 +196,66 @@ exports.updateGoodById = async (req, res) => {
 }
 
 
-
-
 exports.findGoodByCode = async (req, res) => {
   const goodCode = req.query.good_code
+  const nonNegative = req.query.non_negative
 
   if (goodCode) {
+    let goodInfo = null
     try {
-
-      const goodInfo = await Goods.findAll({
+      goodInfo = await Goods.findAll({
         where: {
-          good_code: goodCode
+          good_code: {
+            [Op.like]: `%${goodCode}%`,
+          },
         }
       })
 
-      if (goodInfo.length > 0) {
-
-        res.send({
-          data: goodInfo,
-          message: '查询成功',
-          satus: 0
+      if (goodInfo.length < 1) {
+        goodInfo = await Goods.findAll({
+          where: {
+            good_name: {
+              [Op.like]: `%${goodCode}%`,
+            },
+          }
         })
-
-
-      } else {
-        res.cc('查询数据不存在')
       }
 
+      console.log(goodInfo.length)
 
+
+      if (goodInfo.length === 1) {
+        if (parseInt(nonNegative) === 1 && goodInfo[0].good_stock < 1) {
+          res.cc('库存不足')
+        } else {
+          res.send({
+            data: goodInfo,
+            message: '查询成功',
+            satus: 0
+          })
+        }
+
+      } else if (goodInfo.length > 1) {
+
+        if (parseInt(nonNegative) === 1) {
+          res.send({
+            data: goodInfo.filter(i => i.good_stock > 0),
+            message: '查询成功',
+            satus: 0
+          })
+        } else {
+          res.send({
+            data: goodInfo,
+            message: '查询成功',
+            satus: 0
+          })
+        }
+      } else {
+        res.cc('查询商品不存在')
+      }
     } catch (error) {
-      res.cc('数据查询失败')
+      console.log(error)
+      res.cc(error)
     }
   }
 
@@ -240,9 +268,6 @@ exports.delGoodById = async (req, res) => {
     if (delGoodIds && delGoodIds.length > 0) {
 
       let delCount = 0
-
-
-      // await sequelize.sync()
 
       for (const id of delGoodIds) {
         const goodInfo = await Goods.findAll({
@@ -275,6 +300,75 @@ exports.delGoodById = async (req, res) => {
     }
 
   } catch (error) {
+    console.log(error)
+    res.cc('数据删除失败')
+  }
+}
+
+
+exports.exportFiles = async (req, res) => {
+
+  const fileType = req.query.file_type || 'csv'
+  const file_name = `${Date.now()}.${fileType}`
+
+  try {
+    const whereObj = {}
+
+    for (let key in goodsConfig) {
+      if (req.query[key]) {
+        whereObj[key] = {
+          [Op.like]: `%${req.query[key]}%`,
+        }
+      }
+    }
+    const resData = await Goods.findAll({
+      where: {
+        ...whereObj
+      }
+    })
+    const download_file_url = await writeDataToFile(file_name, fileType, resData, goodsConfig)
+    res.send({
+      data: {
+        download_file_url,
+        file_name
+      },
+      status: 0,
+      message: '文件生成成功！'
+    })
+  } catch (error) {
+    console.log(error)
     res.cc('数据查询失败')
   }
 }
+
+
+exports.findFilterOptions = async (req, res) => {
+  // store: '仓店',
+  // shape_code: '款式编码',
+  // good_code: '商品编码',
+  // good_name: '商品名',
+  // good_color_norm: '颜色及规格',
+  // good_brand: '品牌',
+
+  const fields = ['store', 'shape_code', 'good_code', 'good_name', 'good_color_norm', 'good_brand']
+  const filterOptions = {}
+  try {
+    for (const item of fields) {
+      let fieldOptions = await Goods.findAll({
+        attributes: [item],
+        group: [item],
+        raw: true
+      });
+      filterOptions[item] = fieldOptions.map(option => option[item])
+    }
+    res.send({
+      data: filterOptions,
+      status: 0,
+      message: '筛选参数查询成功'
+    })
+
+  } catch (error) {
+    console.log(error)
+    res.cc('数据查询失败')
+  }
+};

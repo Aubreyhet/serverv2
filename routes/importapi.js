@@ -24,7 +24,13 @@ const upload = multer({ storage: storage })
 
 
 
-router.post('/goods', upload.single('goods_stock'), goodsController.saveDataToSql)
+// router.post('/goods', upload.single('goods_stock'), goodsController.saveDataToSql)
+router.post('/goods', upload.single('goods_stock'), (req, res) => {
+  console.log(req.file)
+  res.send({
+    msg: '上传成功'
+  })
+})
 
 
 module.exports = router;

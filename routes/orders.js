@@ -32,5 +32,9 @@ router.delete('/', orderController.delOrderById)
 
 
 
+router.get('/export', orderController.exportFiles)
+
+
+
 
 module.exports = router;

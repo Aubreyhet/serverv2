@@ -5,9 +5,13 @@ const path = require('path');
 const Sequelize = require('sequelize');
 const process = require('process');
 const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
+const env = process.env.NODE_ENV.trim() || 'development';
+let config = require(__dirname + '/../config/config.json')[env]
+
+
 const db = {};
+const bcrypt = require('bcryptjs')
+
 
 let sequelize;
 if (config.use_env_variable) {
@@ -31,13 +35,68 @@ fs
     db[model.name] = model;
   });
 
+
+
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
 });
 
+for (const key in db) {
+  // if()
+}
+
+
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+
+
+(async () => {
+  try {
+    await sequelize.authenticate()
+    const models = sequelize.models;
+    const tableNames = Object.keys(models);
+    for (const item of tableNames) {
+      await tableExists(item)
+    }
+    try {
+      const count = await db['Users'].count();
+      if (count === 0) {
+        await db['Users'].create({
+          username: 'admin',
+          password: bcrypt.hashSync('123456', 15)
+        })
+      }
+    } catch (error) {
+      console.error('Error checking table:', error);
+    }
+    console.log('database load ok')
+  } catch (error) {
+    console.log(error)
+  }
+
+})()
+
+
+
+const tableExists = async (tableName) => {
+  try {
+    // 执行 SQL 查询检查表是否存在
+    const result = await sequelize.query(`SELECT name FROM sqlite_master WHERE type='table' AND name=:tableName`, {
+      replacements: { tableName },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    if (result.length === 0) {
+      db[tableName].sync({ alter: true })
+    }
+  } catch (error) {
+    console.error('Error checking if table exists:', error);
+  }
+}
+
+
 
 module.exports = db;
