@@ -22,10 +22,9 @@ jobs:
     # create a build matrix for jobs
     strategy:
       matrix:
-        os:
-          [windows-2019]
+        os: [windows-2019]
 
-          # create steps
+    # create steps
     steps:
       # step1: check out repository
       - name: Check out git repository
