@@ -8,7 +8,7 @@
     "ele": "electron ./ele.js",
     "start-app": "SET NODE_ENV=development && nodemon ./bin/www",
     "start-cleanup": "node cleanup.js",
-    "build": "SET NODE_ENV=production && electron-builder"
+    "build": "electron-builder"
   },
   "dependencies": {
     "@escook/express-joi": "^1.1.1",
@@ -45,7 +45,7 @@
     },
     "win": {
       "target": "nsis",
-      "exe": "${name}-${version}.exe"
+      "artifactName": "${productName}${version}.${ext}"
     },
     "publish": {
       "provider": "github",
@@ -57,7 +57,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "${name}"
+      "shortcutName": "${productName}"
     }
   }
 }
