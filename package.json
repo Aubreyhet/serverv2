@@ -1,5 +1,5 @@
 {
-  "name": "expressserve",
+  "name": "cashier",
   "version": "1.0.1",
   "private": true,
   "main": "ele.js",
@@ -38,10 +38,24 @@
     "electron-builder": "^24.9.1"
   },
   "build": {
-    "appId": "com.gendy.myapp",
-    "productName": "MyApp",
+    "appId": "com.gendy.cashier",
+    "productName": "cashier",
     "directories": {
       "output": "dist"
+    },
+    "win": {
+      "target": [{
+        "target": "nsis"
+      }]
+    },
+    "publish": ["github", "bitbucket"],
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "cashier"
     }
   }
 }

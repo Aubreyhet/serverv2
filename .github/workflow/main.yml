@@ -1,0 +1,10 @@
+# main.yml
+
+# Workflow's name
+name: Build Electron App For Win/Mac
+
+# Workflow's trigger
+on:
+  push:
+    tags:
+      - 'v*.*.*'
