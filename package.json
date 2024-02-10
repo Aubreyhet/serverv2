@@ -48,7 +48,7 @@
         "target": "nsis"
       }]
     },
-    "publish": ["github", "bitbucket"],
+    "publish": ["github"],
     "nsis": {
       "oneClick": false,
       "allowElevation": true,
