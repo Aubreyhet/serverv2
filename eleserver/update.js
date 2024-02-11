@@ -92,8 +92,6 @@ const checkUpdate = (win, ipcMain) => {
 };
 
 
-
-
 const mainToRender_Update = (context) => {
   mainWin.webContents.send('mainToRender_Update', context)
 }

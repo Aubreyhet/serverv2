@@ -59,6 +59,7 @@
       "target": [{
         "target": "nsis"
       }],
+      "icon": "public/icon.jpg",
       "artifactName": "${productName}${version}.${ext}"
     }
   }
