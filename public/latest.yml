@@ -1,0 +1,8 @@
+version: 2.0.5
+files:
+  - url: cashier2.0.5.exe
+    sha512: qLNJDElZRDNWMH6SzB9MXXXXAlivXUO6vbh2OPYDihLD4dTlsN5ph57yap6eMDP7ceMsT/0AkXfVO7znfTDEZg==
+    size: 114341612
+path: cashier2.0.5.exe
+sha512: qLNJDElZRDNWMH6SzB9MXXXXAlivXUO6vbh2OPYDihLD4dTlsN5ph57yap6eMDP7ceMsT/0AkXfVO7znfTDEZg==
+releaseDate: '2024-02-11T00:07:50.676Z'

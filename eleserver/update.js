@@ -1,91 +1,173 @@
+const { app } = require('electron');
 const { autoUpdater } = require('electron-updater');
+const fs = require('fs');
+const path = require('path');
 let mainWin = null;
 
 
 
-const checkUpdate = (win, ipcMain) => {
-
-  // autoUpdater.forceDevUpdateConfig = true
-
+const dbFilePath = path.join(__dirname, '../db/cashier_pro.sqlite3');
+const backupFilePath = path.join(app.getPath('userData'), 'backup_cashier_pro.sqlite3');
 
 
-  // autoUpdater.autoDownload = false
 
-  autoUpdater.autoDownload = true; // 自动下载
-  autoUpdater.autoInstallOnAppQuit = true; // 应用退出后自动安装
-
+const checkUpdate = async (win, ipcMain, auto) => {
   mainWin = win
 
+  autoUpdater.forceDevUpdateConfig = true
+  autoUpdater.autoDownload = false; // 自动下载
 
-  mainToRender_Update({
-    msg: '测试数据',
-    data: {
-      name: 'songDog',
-      age: 80
+
+  app.on('will-quit', () => {
+    console.log('--------------------------->>      will-quit ----- 2')
+  });
+
+
+
+  if (auto === '1') {
+    autoUpdater.checkForUpdates()
+  }
+
+  ipcMain.handle('check-update', () => {
+    autoUpdater.checkForUpdates()
+  })
+
+
+  let updateMode = null
+
+  ipcMain.handle('update-event', async (e, v) => {
+    updateMode = v
+    if (updateMode === 1) {
+      // 立即更新
+      try {
+        backupDatabase()
+        await autoUpdater.downloadUpdate()
+      } catch (error) {
+        console.log(error)
+        mainToRender_Update({
+          event: 'error',
+          message: new Error(error)
+        })
+      }
+
+      // 更新操作
+    } else if (updateMode === 0) {
+      // 后台更新
+      try {
+        backupDatabase()
+        await autoUpdater.downloadUpdate()
+
+      } catch (error) {
+        console.log(error)
+        mainToRender_Update({
+          event: 'error',
+          message: new Error(error)
+        })
+      }
+      // 更新操作
     }
   })
 
 
-  autoUpdater.checkForUpdatesAndNotify().catch();
+
+
+
+
+  // autoUpdater.autoDownload = true; // 自动下载
+  // autoUpdater.autoInstallOnAppQuit = true; // 应用退出后自动安装
+
+
+
+
+  // autoUpdater.checkForUpdatesAndNotify().catch();
+
+
   // 监听渲染进程的 install 事件，触发退出应用并安装
-  ipcMain.handle('install', () => autoUpdater.quitAndInstall());
-
-
-  // 手动触发更新检查
-  // autoUpdater.checkForUpdates()
+  // ipcMain.handle('install', () => autoUpdater.quitAndInstall());
 
 
   autoUpdater.on('appimage-filename-updated', (message) => {
-    console.log(message)
-    mainToRender_Update('主进程在更新程序 ---------->>  appimage-filename-updated.....')
+    mainToRender_Update({
+      event: 'appimage-filename-updated',
+      message
+    })
   })
 
   autoUpdater.on('checking-for-update', (message) => {
-    console.log(message)
-    mainToRender_Update('主进程在更新程序 ---------->>  checking-for-update.....')
+    mainToRender_Update({
+      event: 'checking-for-update',
+      message
+    })
   });
 
   autoUpdater.on('download-progress', (message) => {
-    console.log(message)
-    mainToRender_Update('主进程在更新程序 ---------->>  download-progress.....')
+    if (updateMode === 1) {
+      mainToRender_Update({
+        event: 'download-progress',
+        message
+      })
+    }
+
   })
 
   autoUpdater.on('error', (message) => {
-    console.log(message)
-    mainToRender_Update('主进程在更新程序 ------>>   error.....')
+    mainToRender_Update({
+      event: 'error',
+      message
+    })
   })
 
   autoUpdater.on('login', (message) => {
-    console.log(message)
-    mainToRender_Update('主进程在更新程序 ---------->>  login.....')
+    mainToRender_Update({
+      event: 'login',
+      message
+    })
   })
 
   autoUpdater.on('update-available', (message) => {
-    console.log(message)
-    mainToRender_Update('主进程在更新程序 ---------->>  update-available.....')
+    mainToRender_Update({
+      event: 'update-available',
+      message
+    })
   })
 
   autoUpdater.on('update-cancelled', (message) => {
-    console.log(message)
-    mainToRender_Update('主进程在更新程序 ---------->>  update-cancelled.....')
+    mainToRender_Update({
+      event: 'update-cancelled',
+      message
+    })
   })
 
 
   autoUpdater.on('update-downloaded', (message) => {
-    console.log(message)
-    mainToRender_Update('主进程在更新程序 ---------->>  update-downloaded.....')
+    if (updateMode === 1) {
+      // 立即更新的话 下载完成之后通知渲染进程 是否重启安装
+      mainToRender_Update({
+        event: 'update-downloaded',
+        message
+      })
+      ipcMain.handle('update-event', (e, v) => {
+        if (v === 1) {
+          autoUpdater.quitAndInstall()
+        } else if (v === 0) {
+          app.on('will-quit', () => {
+            autoUpdater.quitAndInstall()
+          })
+        }
+      })
+    } else if (updateMode === 0) {
+      app.on('will-quit', () => {
+        autoUpdater.quitAndInstall()
+      })
+    }
   })
 
   autoUpdater.on('update-not-available', (message) => {
-    console.log(message)
-    mainToRender_Update('主进程在更新程序 ------->>   update-not-available.....')
+    mainToRender_Update({
+      event: 'update-not-available',
+      message
+    })
   });
-
-
-
-  ipcMain.on('renderToMain_other', (event, message) => {
-    console.log(message)
-  })
 
 
 
@@ -93,15 +175,31 @@ const checkUpdate = (win, ipcMain) => {
 
 
 const mainToRender_Update = (context) => {
-  mainWin.webContents.send('mainToRender_Update', context)
+  mainWin.webContents.send('update-counter', context)
 }
+
+// const duplexSession = () => {
+//   ipcMain.handle('invoke-function', async (event, arg) => {
+//     // do something
+//     return result;
+//   })
+// }
+
+const backupDatabase = () => {
+  fs.copyFileSync(dbFilePath, backupFilePath);
+}
+
+
+// const restoreDatabase = () => {
+//   fs.copyFileSync(backupFilePath, dbFilePath)
+// }
 
 module.exports = checkUpdate;
 
 
 
 // const checkUpdateV2 = (window, feedUrl) => {
-//   mainWindow = window;
+//   mainWin = window;
 //   let message = {
 //     error: '检查更新出错',
 //     checking: '正在检查更新……',

@@ -1,5 +1,6 @@
 // Modules to control application life and create native browser window
 const http = require('http');
+const fs = require('fs');
 const path = require('node:path')
 
 const expApp = require('./app');
@@ -33,19 +34,19 @@ const createWindow = () => {
 
 
   let mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 700,
+    width: 1024,
+    height: 768,
+    minWidth: 1024,
+    minHeight: 768,
+    frame: true,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       preload: path.resolve(__dirname, './eleserver/renderer.js')
     },
   })
 
-  // 检查版本更新
-  checkUpdate(mainWindow, ipcMain);
 
-  // 移除菜单
-  mainWindow.removeMenu();
 
   // 设置快捷键开启开发者工具
   globalShortcut.register('CommandOrControl+Shift+I', () => {
@@ -54,16 +55,27 @@ const createWindow = () => {
 
 
   // 加载页面窗口文件
-  mainWindow.loadURL(`http://localhost:${port}`);
+  // mainWindow.loadURL(`http://localhost:${port}`);
+  mainWindow.loadURL(`http://localhost:3000`);
 
 
   mainWindow.webContents.on('dom-ready', () => {
     console.log('--------------------------->>      dom-ready')
   })
 
+
+  let autoUpdate = '0'
+
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('--------------------------->>      did-finish-load')
   })
+
+  ipcMain.handle('set-autoupdate', (e, m) => {
+    checkUpdate(mainWindow, ipcMain, m);
+  })
+
+
+
 
   mainWindow.on('close', () => {
     console.log('--------------------------->>      close')
@@ -73,6 +85,7 @@ const createWindow = () => {
 
 app.on('ready', () => {
   console.log('--------------------------->>      ready')
+  checkDabaBase()
   createWindow()
   app.on('activate', function () {
     console.log('----------->>      ready   ------------------->>    activate')
@@ -91,13 +104,30 @@ app.on('before-quit', () => {
 });
 
 app.on('will-quit', () => {
-  console.log('--------------------------->>      will-quit')
+  console.log('--------------------------->>      will-quit ---- 1')
   globalShortcut.unregisterAll();
 });
+
 
 app.on('quit', () => {
   console.log('--------------------------->>      quit')
 });
+
+const checkDabaBase = () => {
+  const dbFolderPath = path.join(__dirname, 'db');
+  const dbFilePath = path.join(dbFolderPath, 'cashier_pro.sqlite3');
+  const backupFilePath = path.join(app.getPath('userData'), 'backup_cashier_pro.sqlite3')
+
+  console.log(dbFolderPath, dbFilePath, backupFilePath)
+  if (!fs.existsSync(dbFilePath)) {
+    if (!fs.existsSync(dbFolderPath)) {
+      fs.mkdirSync(dbFolderPath, { recursive: true });
+    }
+    if (fs.existsSync(backupFilePath)) {
+      fs.copyFileSync(backupFilePath, dbFilePath)
+    }
+  }
+}
 
 
 
