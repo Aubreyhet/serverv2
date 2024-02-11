@@ -1,13 +1,15 @@
 // Modules to control application life and create native browser window
-const expApp = require('./app');
 const http = require('http');
-const checkUpdate = require('./update.js');
+const path = require('node:path')
+
+const expApp = require('./app');
+const checkUpdate = require('./eleserver/update.js');
 
 
 const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron')
 
 
-const port = normalizePort(process.env.PORT || '8010');
+const port = normalizePort('8010');
 expApp.set('port', port);
 
 const server = http.createServer(expApp);
@@ -27,41 +29,75 @@ server.on('listening', () => {
 
 
 
-function createWindow () {
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    // frame: false,
+const createWindow = () => {
+
+
+  let mainWindow = new BrowserWindow({
+    width: 1000,
+    height: 700,
     webPreferences: {
       nodeIntegration: true,
+      preload: path.resolve(__dirname, './eleserver/renderer.js')
     },
   })
-  mainWindow.removeMenu();
+
+  // 检查版本更新
   checkUpdate(mainWindow, ipcMain);
-  mainWindow.loadURL(`http://localhost:${port}`);
+
+  // 移除菜单
+  mainWindow.removeMenu();
+
+  // 设置快捷键开启开发者工具
   globalShortcut.register('CommandOrControl+Shift+I', () => {
     mainWindow.webContents.openDevTools();
   });
+
+
+  // 加载页面窗口文件
+  mainWindow.loadURL(`http://localhost:${port}`);
+
+
+  mainWindow.webContents.on('dom-ready', () => {
+    console.log('--------------------------->>      dom-ready')
+  })
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('--------------------------->>      did-finish-load')
+  })
+
+  mainWindow.on('close', () => {
+    console.log('--------------------------->>      close')
+  })
 }
 
-app.whenReady().then(() => {
-  console.log('测试中文输出')
-  createWindow()
 
+app.on('ready', () => {
+  console.log('--------------------------->>      ready')
+  createWindow()
   app.on('activate', function () {
+    console.log('----------->>      ready   ------------------->>    activate')
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
 
+app.on('window-all-closed', function () {
+  console.log('--------------------------->>      window-all-closed')
+  if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('before-quit', () => {
+  console.log('--------------------------->>      before-quit')
+});
+
 app.on('will-quit', () => {
+  console.log('--------------------------->>      will-quit')
   globalShortcut.unregisterAll();
 });
 
-
-app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') app.quit()
-})
+app.on('quit', () => {
+  console.log('--------------------------->>      quit')
+});
 
 
 

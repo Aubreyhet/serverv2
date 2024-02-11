@@ -1,14 +1,15 @@
 {
   "name": "cashier",
-  "version": "2.0.2",
+  "version": "2.0.5",
   "private": true,
-  "main": "ele.js",
+  "main": "main.js",
   "scripts": {
     "start": "npm run start-app",
-    "ele": "electron ./ele.js",
     "start-app": "SET NODE_ENV=development && nodemon ./bin/www",
-    "start-cleanup": "node cleanup.js",
-    "build": "electron-builder"
+
+    "ele": "electron .",
+
+    "electron:build": "electron-builder"
   },
   "dependencies": {
     "@escook/express-joi": "^1.1.1",
@@ -40,24 +41,26 @@
   "build": {
     "appId": "com.gendy.cashier",
     "productName": "cashier",
+    "publish": {
+      "provider": "github",
+      "releaseType": "release",
+      "owner": "Aubreyhet",
+      "repo": "serverv2"
+    },
+    "asar": true,
     "directories": {
       "output": "dist"
     },
-    "win": {
-      "target": "nsis",
-      "artifactName": "${productName}${version}.${ext}"
-    },
-    "publish": {
-      "provider": "github",
-      "releaseType": "release"
-    },
     "nsis": {
       "oneClick": false,
-      "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "${productName}"
+      "deleteAppDataOnUninstall": true
+    },
+    "win": {
+      "target": [{
+        "target": "nsis"
+      }],
+      "artifactName": "${productName}${version}.${ext}"
     }
   }
 }

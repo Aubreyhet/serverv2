@@ -1,4 +1,4 @@
-const createError = require('http-errors');
+
 const express = require('express');
 const cors = require('cors')
 const path = require('path');
@@ -46,9 +46,9 @@ app.use((req, res, next) => {
 
 
 
-// app.use(jwt({ secret: jwtSecretKey, algorithms: ["HS256"] }).unless({
-//   path: [/^\/api_v1\/openapi/]
-// }))
+app.use(jwt({ secret: jwtSecretKey, algorithms: ["HS256"] }).unless({
+  path: [/^\/api_v1\/openapi/]
+}))
 
 
 
