@@ -115,7 +115,7 @@ const checkDabaBase = () => {
   const dbFolderPath = path.join(appPath, 'db');
   const dbFilePath = path.join(dbFolderPath, 'cashier_pro.sqlite3');
   const backupFilePath = path.join(app.getPath('userData'), 'backup_cashier_pro.sqlite3')
-  console.log(appPath)
+  console.log(appPath, dbFilePath, backupFilePath)
   try {
     if (!fs.existsSync(dbFilePath)) {
       if (!fs.existsSync(dbFolderPath)) {

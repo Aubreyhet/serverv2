@@ -6,7 +6,7 @@ let mainWin = null;
 
 
 
-const dbFilePath = path.join(__dirname, '../db/cashier_pro.sqlite3');
+const dbFilePath = path.join(app.getAppPath(), 'db/cashier_pro.sqlite3');
 const backupFilePath = path.join(app.getPath('userData'), 'backup_cashier_pro.sqlite3');
 
 
