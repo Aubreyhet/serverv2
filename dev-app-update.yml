@@ -1,4 +1,0 @@
-provider: generic
-updaterCacheDirName: dev-updater
-url: 'http://127.0.0.1:8010/'
-

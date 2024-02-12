@@ -56,7 +56,7 @@ const createWindow = () => {
 
   // 加载页面窗口文件
   // mainWindow.loadURL(`http://localhost:${port}`);
-  mainWindow.loadURL(`http://localhost:3000`);
+  mainWindow.loadURL(`http://localhost:8010`);
 
 
   mainWindow.webContents.on('dom-ready', () => {
@@ -120,9 +120,11 @@ const checkDabaBase = () => {
     if (!fs.existsSync(dbFilePath)) {
       if (!fs.existsSync(dbFolderPath)) {
         fs.mkdirSync(dbFolderPath, { recursive: true });
+        console.log('code chaungjian db Folder')
       }
       if (fs.existsSync(backupFilePath)) {
         fs.copyFileSync(backupFilePath, dbFilePath)
+        console.log('code copy db Folder')
       }
     }
   } catch (error) {

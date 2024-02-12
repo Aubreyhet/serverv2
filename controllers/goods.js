@@ -5,8 +5,6 @@ const xlsx = require('xlsx');
 // const path = require('path')
 const { goodsConfig } = require('../config/goodsconfis')
 
-const { writeDataToFile } = require('../utils/index')
-
 const { Goods, Sequelize } = require('../models')
 const { Op } = Sequelize
 
@@ -77,8 +75,6 @@ exports.saveDataToSql = async (req, res) => {
               countObj.importCount++
             }
           }
-
-
         }
 
         res.send({
@@ -88,6 +84,14 @@ exports.saveDataToSql = async (req, res) => {
           },
           message: '数据更新成功'
         })
+
+        fs.unlink(`uploads/${req.file.filename}`, (err) => {
+          if (err) {
+            console.error('Error deleting file:', err);
+          } else {
+            console.log('File deleted successfully');
+          }
+        });
 
       } else {
         res.cc('数据表为空')
@@ -308,7 +312,8 @@ exports.delGoodById = async (req, res) => {
 
 exports.exportFiles = async (req, res) => {
 
-  const fileType = req.query.file_type || 'csv'
+  // const fileType = req.query.file_type || 'csv'
+  const fileType = 'csv'
   const file_name = `${Date.now()}.${fileType}`
 
   try {
@@ -326,15 +331,25 @@ exports.exportFiles = async (req, res) => {
         ...whereObj
       }
     })
-    const download_file_url = await writeDataToFile(file_name, fileType, resData, goodsConfig)
-    res.send({
-      data: {
-        download_file_url,
-        file_name
-      },
-      status: 0,
-      message: '文件生成成功！'
-    })
+    // const download_file_url = await writeDataToFile(file_name, fileType, resData, goodsConfig)
+    // res.send({
+    //   data: {
+    //     download_file_url,
+    //     file_name
+    //   },
+    //   status: 0,
+    //   message: '文件生成成功！'
+    // })
+
+    const header = Object.values(goodsConfig);
+    const goodsData = [[' ', ...header], ...resData.map(good => Object.values(good.dataValues))]
+    const workbook = xlsx.utils.book_new();
+    const worksheet = xlsx.utils.aoa_to_sheet(goodsData);
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${file_name}"`);
+    const fileBuffer = xlsx.write(workbook, { type: 'buffer', bookType: 'csv' });
+    res.send(fileBuffer);
   } catch (error) {
     console.log(error)
     res.cc('数据查询失败')

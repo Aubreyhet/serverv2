@@ -29,7 +29,7 @@ exports.getParserTime = () => {
 }
 
 exports.writeDataToFile = async (filename, type, data, table_header) => {
-  const filePath = path.join(__dirname, `../public/download/${filename}`);
+  const filePath = `/public/download/${filename}`;
   const resFilePath = `/download/${filename}`
   if (type === 'json') {
     await fs.writeFileSync(filePath, JSON.stringify(data))
@@ -46,7 +46,6 @@ exports.writeDataToFile = async (filename, type, data, table_header) => {
     const worksheet = xlsx.utils.aoa_to_sheet(goodsData);
 
     xlsx.utils.book_append_sheet(workbook, worksheet, 'table1');
-
 
     xlsx.writeFile(workbook, filePath);
 

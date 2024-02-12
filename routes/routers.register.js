@@ -20,7 +20,7 @@ router.use('/openapi', publicRouter)
 router.use('/download', (req, res) => {
   const fileUrl = req.query.fileurl
   if (fileUrl) {
-    const filePath = path.join(__dirname, `../public${fileUrl}`)
+    const filePath = `public${fileUrl}`
     res.download(filePath)
   } else {
     res.cc('下载地址有误')
