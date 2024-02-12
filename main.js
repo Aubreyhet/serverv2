@@ -111,11 +111,11 @@ app.on('quit', () => {
 });
 
 const checkDabaBase = () => {
-  const appPath = app.getAppPath();
-  const dbFolderPath = path.join(appPath, 'db');
+  const dbFolderPath = 'db'
   const dbFilePath = path.join(dbFolderPath, 'cashier_pro.sqlite3');
   const backupFilePath = path.join(app.getPath('userData'), 'backup_cashier_pro.sqlite3')
-  console.log(appPath, dbFilePath, backupFilePath)
+  console.log(dbFolderPath, dbFilePath, backupFilePath)
+
   try {
     if (!fs.existsSync(dbFilePath)) {
       if (!fs.existsSync(dbFolderPath)) {
