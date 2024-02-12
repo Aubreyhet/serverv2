@@ -60,7 +60,6 @@ const checkUpdate = async (win, ipcMain, auto) => {
           message: new Error(error)
         })
       }
-      // 更新操作
     }
   })
 
@@ -142,7 +141,7 @@ const checkUpdate = async (win, ipcMain, auto) => {
         event: 'update-downloaded',
         message
       })
-      ipcMain.handle('update-event', (e, v) => {
+      ipcMain.handle('install-event', (e, v) => {
         if (v === 1) {
           autoUpdater.quitAndInstall()
         } else if (v === 0) {

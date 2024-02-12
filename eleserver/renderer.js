@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setAutoDate: async (v) => await ipcRenderer.invoke('set-autoupdate', v),
   checkUpdate: () => ipcRenderer.invoke('check-update'),
   updateEvent: (v) => ipcRenderer.invoke('update-event', v),
+  installEvent: (v) => ipcRenderer.invoke('install-event', v),
   onUpdateCounter: (cb) => ipcRenderer.on('update-counter', cb)
 })
 
