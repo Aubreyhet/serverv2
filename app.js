@@ -36,6 +36,7 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api_v1/')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'))
@@ -72,6 +73,5 @@ app.use(function (req, res, next) {
     message: '出错了'
   })
 });
-
 
 module.exports = app;

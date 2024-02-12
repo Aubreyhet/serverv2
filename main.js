@@ -63,9 +63,6 @@ const createWindow = () => {
     console.log('--------------------------->>      dom-ready')
   })
 
-
-  let autoUpdate = '0'
-
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('--------------------------->>      did-finish-load')
   })
@@ -114,19 +111,23 @@ app.on('quit', () => {
 });
 
 const checkDabaBase = () => {
-  const dbFolderPath = path.join(__dirname, 'db');
+  const appPath = app.getAppPath();
+  const dbFolderPath = path.join(appPath, 'db');
   const dbFilePath = path.join(dbFolderPath, 'cashier_pro.sqlite3');
   const backupFilePath = path.join(app.getPath('userData'), 'backup_cashier_pro.sqlite3')
-
-  console.log(dbFolderPath, dbFilePath, backupFilePath)
-  if (!fs.existsSync(dbFilePath)) {
-    if (!fs.existsSync(dbFolderPath)) {
-      fs.mkdirSync(dbFolderPath, { recursive: true });
+  try {
+    if (!fs.existsSync(dbFilePath)) {
+      if (!fs.existsSync(dbFolderPath)) {
+        fs.mkdirSync(dbFolderPath, { recursive: true });
+      }
+      if (fs.existsSync(backupFilePath)) {
+        fs.copyFileSync(backupFilePath, dbFilePath)
+      }
     }
-    if (fs.existsSync(backupFilePath)) {
-      fs.copyFileSync(backupFilePath, dbFilePath)
-    }
+  } catch (error) {
+    console.log(error)
   }
+
 }
 
 

@@ -1,17 +1,18 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const Sequelize = require('sequelize');
 const process = require('process');
 const basename = path.basename(__filename);
-// const env = process.env.NODE_ENV.trim() || 'development';
 const env = 'production';
 let config = require(__dirname + '/../config/config.json')[env]
+const bcrypt = require('bcryptjs')
 
 
 const db = {};
-const bcrypt = require('bcryptjs')
+
 
 
 let sequelize;
@@ -44,9 +45,6 @@ Object.keys(db).forEach(modelName => {
   }
 });
 
-for (const key in db) {
-  // if()
-}
 
 
 
@@ -97,6 +95,9 @@ const tableExists = async (tableName) => {
     console.error('Error checking if table exists:', error);
   }
 }
+
+
+
 
 
 
